@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Torneo Magic — App</title>
+
+  <!-- Font: header elegante + testo moderno -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Export immagine -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <!-- PDF con campi modificabili -->
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+
+  <style>
+    :root{
+      /* Vibe ispirata a magic.wizards.com */
+      --bg: #0a0c10;
+      --bg2:#0c0f15;
+      --panel:#14171f;
+      --ink:#f4efe7;
+      --muted:#a8a19a;
+      --line:#222634;
+      --gold:#ddb972;       /* accento oro caldo */
+      --crimson:#9f2e24;    /* rosso profondo */
+      --danger:#c93c3c;
+
+      --btn-bg: #191c24;
+      --btn-border: #2a2e3b;
+      --btn-hover: #1c2029;
+    }
+    *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+    html, body { height:100%; }
+    body{
+      margin:0; color:var(--ink);
+      background:
+        radial-gradient(1100px 700px at 12% -10%, rgba(221,185,114,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg), var(--bg2) 60%, var(--bg));
+      font-family: "Source Sans 3", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    /* App container */
+    .app{
+      max-width: 520px;
+      margin: 0 auto;
+      min-height: 100dvh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      box-shadow: 0 8px 20px rgba(0,0,0,.45);
+    }
+
+    /* App Bar */
+    .appbar{
+      position: sticky; top:0; z-index:30;
+      padding: calc(env(safe-area-inset-top, 0px) + 10px) 12px 10px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+    }
+    .brand{ display:flex; flex-direction:column; line-height:1.05; }
+    .title{
+      font-family: Cinzel, serif; font-weight:700; letter-spacing:.4px; font-size: 19px;
+    }
+    .subtitle{ font-size:12px; color:var(--muted); }
+
+    /* Export menu */
+    .iconbtn{
+      border:1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color:var(--ink);
+      border-radius: 10px;
+      padding: 8px 10px;   /* più piccolo e minimale */
+      font-weight:700; font-size:14px;
+      cursor:pointer;
+    }
+    .iconbtn:hover{ background: var(--btn-hover); }
+    .menu{
+      position: absolute; right: 12px; top: 58px;
+      background: #0f1218; border:1px solid var(--line); border-radius:10px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.45);
+      overflow:hidden; min-width: 210px; display:none; z-index:50;
+    }
+    .menu.open{ display:block; }
+    .menu button{
+      display:flex; width:100%; padding:10px 12px; background:transparent; color:var(--ink);
+      border:none; border-bottom:1px solid rgba(255,255,255,.04); font-size:14px; cursor:pointer; gap:8px; align-items:center;
+    }
+    .menu button:last-child{ border-bottom:none; }
+    .menu button:hover{ background:#141924; }
+
+    /* Content */
+    .content{ overflow:auto; padding: 12px 12px 84px; }
+
+    /* Card */
+    .card{
+      background: linear-gradient(180deg, #171a22, #141823);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      margin: 10px 0;
+    }
+    .card-header{
+      display:flex; align-items:baseline; justify-content:space-between; gap:8px;
+      margin-bottom: 8px;
+      border-bottom: 1px dashed rgba(255,255,255,.08);
+      padding-bottom: 6px;
+    }
+    .card-title{
+      font-family: Cinzel, serif; font-size: 15px; color: var(--gold);
+      letter-spacing:.3px;
+    }
+    .card-note{ font-size: 12px; color: var(--muted); }
+
+    /* Players */
+    .players-list{ display:flex; flex-direction:column; gap:8px; }
+    .player-row{
+      display:grid; grid-template-columns: auto 1fr auto; gap:8px; align-items:center;
+      padding:8px; border-radius: 10px;
+      background: linear-gradient(180deg, transparent, rgba(0,0,0,.03));
+      border:1px solid var(--line);
+      transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    .player-row.duplicate{
+      border-color: var(--danger);
+      box-shadow: 0 0 0 3px rgba(201,60,60,.18);
+    }
+    .player-num{ width: 26px; text-align:right; color: var(--muted); font-weight:700; }
+    .player-row input[type="text"]{
+      width:100%; background:#0f1218; color:var(--ink);
+      border:1px solid var(--line);
+      border-radius: 8px; padding: 10px 10px; font-size:15px; outline:none;
+      transition: border-color .12s ease, box-shadow .12s ease;
+    }
+    .player-row input[type="text"]:focus{ border-color: var(--gold); box-shadow: 0 0 0 3px rgba(221,185,114,.20); }
+    .player-row input[type="text"].duplicate{
+      border-color: var(--danger);
+      box-shadow: 0 0 0 3px rgba(201,60,60,.18);
+    }
+    .btn-plain{
+      border:1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color:var(--ink);
+      border-radius: 8px;
+      padding: 8px 10px;     /* più piccolo */
+      font-weight:700; font-size:13px;
+      cursor:pointer;
+    }
+    .btn-plain:hover{ background: var(--btn-hover); }
+
+    /* Rounds */
+    .round{ border:1px solid var(--line); border-radius:12px; padding:10px; background: linear-gradient(180deg, transparent, rgba(0,0,0,.03)); }
+    .round h3{
+      margin: 4px 0 8px; font-family: Cinzel, serif; font-size: 14px; color: var(--crimson);
+      text-align:center; letter-spacing:.2px;
+    }
+    .matches{ display:flex; flex-direction:column; gap:8px; }
+    .match{
+      border:1px solid var(--line); border-radius: 10px;
+      background: #161a24;
+      padding: 10px;
+      display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px;
+    }
+    .postazione{ font-family: Cinzel, serif; font-weight:700; letter-spacing:.3px; color: var(--gold); }
+    .vs{ font-weight: 700; font-size: 15px; color: var(--ink); }
+    .bye{ opacity:.9; font-style:italic }
+
+    /* Action bar (minimale, piccoli bottoni) */
+    .actionbar{
+      position: sticky; bottom: 0; z-index: 20;
+      padding: 8px 12px calc(env(safe-area-inset-bottom, 0px) + 8px);
+      background: var(--panel);
+      border-top: 1px solid var(--line);
+      display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;
+    }
+    .btn{
+      border:1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color:var(--ink);
+      border-radius: 10px;
+      padding: 10px 10px;     /* più piccolo e minimale */
+      font-weight:700; font-size:13px;
+      cursor:pointer;
+    }
+    .btn:hover{ background: var(--btn-hover); }
+
+    .footer-note{ color:var(--muted); font-size:12px; margin-top:6px }
+
+    /* A4 sheet (per immagine) */
+    .a4-sheet{
+      width: 794px; min-height: 1123px; background: #fff; color:#222;
+      padding: 24px; border: 1px solid #ddd; font-family: "Source Sans 3", system-ui, sans-serif;
+    }
+    .a4-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid #333; }
+    .a4-title{ font-family: Cinzel, serif; font-weight:700; font-size: 22px; }
+    .a4-round{ margin-top: 10px; }
+    .a4-round h4{ margin:10px 0 4px; font-family:Cinzel,serif; font-size:16px }
+    .a4-match{
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+      border:1px solid #ddd; border-radius:8px; padding:10px 12px; margin-top:8px;
+      background:#fbfbfb; font-size:14px;
+    }
+    .a4-post{ font-weight:700; min-width: 120px; }
+    .a4-scores{ display:flex; gap:12px; align-items:center; }
+    .a4-scores .box{ width: 64px; height: 36px; border:1px solid #bbb; border-radius:6px; background:#fff; }
+  </style>
+</head>
+<body>
+  <div class="app" id="appRoot">
+    <!-- App Bar -->
+    <header class="appbar">
+      <div class="brand">
+        <div class="title">Torneo Magic</div>
+        <div class="subtitle">Tutti contro tutti · Postazioni · Export A4</div>
+      </div>
+
+      <div style="position:relative">
+        <button class="iconbtn" id="btnExport">Esporta</button>
+        <div class="menu" id="exportMenu" role="menu" aria-label="Esporta">
+          <button id="optImage" role="menuitem">📷 Esporta immagine (PNG)</button>
+          <button id="optPDF" role="menuitem">📝 Esporta PDF (modificabile)</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Contenuti -->
+    <main class="content" id="content">
+      <!-- Giocatori -->
+      <section class="card" aria-labelledby="players-title">
+        <div class="card-header">
+          <div class="card-title" id="players-title">Giocatori</div>
+          <div class="card-note">Numerati · Duplicati evidenziati</div>
+        </div>
+        <div id="playersList" class="players-list" aria-live="polite"></div>
+
+        <div class="footer-note">Se i giocatori sono dispari verrà inserito un <em>BYE</em> (riposo) che comparirà in cima al round.</div>
+      </section>
+
+      <!-- Calendario -->
+      <section class="card" aria-labelledby="calendar-title">
+        <div class="card-header">
+          <div class="card-title" id="calendar-title">Calendario</div>
+          <div class="card-note" id="summary"></div>
+        </div>
+        <div id="output" class="rounds" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <!-- Action Bar (minimale) -->
+    <nav class="actionbar" aria-label="Azioni">
+      <button class="btn" id="btnAdd">+ Aggiungi</button>
+      <button class="btn" id="btnShuffle">Mescola</button>
+      <button class="btn" id="btnGenerate">Genera</button>
+    </nav>
+  </div>
+
+  <script>
+    /* ========= Helpers ========= */
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+    function el(tag, attrs={}, ...children){
+      const node = document.createElement(tag);
+      for(const [k,v] of Object.entries(attrs)){
+        if(k === 'class') node.className = v;
+        else if(k === 'for') node.htmlFor = v;
+        else if(k.startsWith('on') && typeof v === 'function') node.addEventListener(k.substring(2), v);
+        else node.setAttribute(k, v);
+      }
+      for(const c of children){
+        if(c == null) continue;
+        node.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+      }
+      return node;
+    }
+    function shuffle(arr){
+      for(let i = arr.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    /* ========= Giocatori ========= */
+    function updatePlayerNumbers(){
+      $$('.player-row .player-num').forEach((n,i)=> n.textContent = (i+1) + '.');
+    }
+    function getPlayerInputs(){ return $$('.player-row input[type="text"]'); }
+    function getPlayers(){ return getPlayerInputs().map(i => i.value.trim()).filter(Boolean); }
+
+    function addPlayerRow(name=''){
+      const num = el('div', {class:'player-num'}, '');
+      const input = el('input', {type:'text', placeholder:'Nome giocatore', value:name});
+      const remove = el('button', {class:'btn-plain', onclick: () => { row.remove(); updatePlayerNumbers(); validateDuplicates(false); }}, 'Rimuovi');
+      const row = el('div', {class:'player-row'}, num, input, remove);
+      $('#playersList').appendChild(row);
+      updatePlayerNumbers();
+
+      input.addEventListener('input', () => validateDuplicates(false));
+      input.focus();
+      return row;
+    }
+
+    function validateDuplicates(showAlert){
+      const inputs = getPlayerInputs();
+      // reset
+      inputs.forEach(inp => {
+        inp.classList.remove('duplicate');
+        inp.closest('.player-row')?.classList.remove('duplicate');
+      });
+      // collect
+      const map = new Map(); // lower -> [inputs]
+      inputs.forEach(inp => {
+        const val = inp.value.trim();
+        if(!val) return;
+        const key = val.toLowerCase();
+        if(!map.has(key)) map.set(key, []);
+        map.get(key).push(inp);
+      });
+      const dupGroups = Array.from(map.values()).filter(arr => arr.length > 1);
+      if(dupGroups.length){
+        const names = [];
+        dupGroups.forEach(group => {
+          group.forEach(inp => {
+            inp.classList.add('duplicate');
+            inp.closest('.player-row')?.classList.add('duplicate');
+          });
+          names.push(group[0].value.trim());
+        });
+        if(showAlert){
+          alert('Ci sono nomi duplicati (non ammessi):\\n- ' + names.join('\\n- ') + '\\nModifica o rimuovi i doppioni e riprova.');
+        }
+        return false;
+      }
+      return true;
+    }
+
+    function shuffleInputs(){
+      const rows = $$('#playersList .player-row');
+      if(rows.length < 2){ alert('Aggiungi almeno due giocatori.'); return; }
+      const vals = rows.map(r => r.querySelector('input').value.trim()).filter(Boolean);
+      if(vals.length < 2){ alert('Inserisci almeno due nomi validi.'); return; }
+      shuffle(vals);
+      let i=0; rows.forEach(r => r.querySelector('input').value = vals[i++] ?? '');
+      validateDuplicates(false);
+    }
+
+    /* ========= Round Robin ========= */
+    function generateRoundRobin(players){
+      const names = [...players];
+      let hadBye = false;
+      if (names.length % 2 !== 0){ names.push('BYE'); hadBye = true; }
+      const n = names.length, rounds = n - 1, half = n / 2;
+      const fixed = names[0];
+      let rotating = names.slice(1);
+      const roundsData = [];
+      for(let r=0; r<rounds; r++){
+        const left = [fixed, ...rotating.slice(0, half - 1)];
+        const right = rotating.slice(half - 1).reverse();
+        const pairs = [];
+        for(let i=0;i<left.length;i++){ pairs.push([left[i], right[i]]); }
+        roundsData.push(pairs);
+        rotating = [rotating[rotating.length - 1], ...rotating.slice(0, rotating.length - 1)];
+      }
+      return {roundsData, hadBye};
+    }
+
+    function renderSchedule(roundsData, hadBye, playerCount){
+      const output = $('#output');
+      const summary = $('#summary');
+      output.innerHTML = '';
+
+      const totalPlayers = hadBye ? playerCount + 1 : playerCount;
+      const effectivePlayers = hadBye ? totalPlayers - 1 : totalPlayers;
+      const totalMatches = (effectivePlayers * (effectivePlayers - 1)) / 2;
+      const rounds = roundsData.length;
+      const matchesPerRound = Math.floor(effectivePlayers / 2);
+
+      summary.textContent = `Giocatori: ${effectivePlayers} • Round: ${rounds} • Match: ${totalMatches} • Postazioni/round: ${matchesPerRound}` + (hadBye ? ' • BYE gestito' : '');
+
+      roundsData.forEach((pairs, idx) => {
+        const round = el('div', {class:'round'});
+        round.appendChild(el('h3', {}, `Round ${idx+1}`));
+        const list = el('div', {class:'matches'});
+
+        // BYE in cima
+        const byeItems = [];
+        const normalItems = [];
+        let post = 1;
+        pairs.forEach(([A,B]) => {
+          if (A==='BYE' || B==='BYE'){
+            const resting = A==='BYE'? B : A;
+            byeItems.push(el('div',{class:'match bye'},
+              el('div',{class:'postazione'}, 'Postazione —'),
+              el('div',{class:'vs'}, `${resting} riposa (BYE)`)
+            ));
+          } else {
+            normalItems.push(el('div',{class:'match'},
+              el('div',{class:'postazione'}, `Postazione ${post}`),
+              el('div',{class:'vs'}, `${A} vs ${B}`)
+            ));
+            post++;
+          }
+        });
+        byeItems.forEach(m => list.appendChild(m));
+        normalItems.forEach(m => list.appendChild(m));
+
+        round.appendChild(list);
+        output.appendChild(round);
+      });
+    }
+
+    /* ========= Export: PNG ========= */
+    async function exportImageA4(){
+      const schedule = $('#output');
+      if(!schedule.children.length){ alert('Genera prima il calendario.'); return; }
+
+      const sheet = el('div',{class:'a4-sheet'});
+      sheet.appendChild(el('div',{class:'a4-header'},
+        el('div',{class:'a4-title'}, 'Torneo Magic — Calendario'),
+        el('div',{}, new Date().toLocaleString())
+      ));
+
+      const rounds = Array.from(schedule.children);
+      rounds.forEach((roundDiv, idx) => {
+        const title = roundDiv.querySelector('h3')?.textContent || `Round ${idx+1}`;
+        const block = el('div',{class:'a4-round'}, el('h4',{}, title));
+
+        roundDiv.querySelectorAll('.match').forEach((m,i) => {
+          const txt = m.querySelector('.vs')?.textContent || '';
+          if(/BYE/i.test(txt) || /riposa/i.test(txt)){
+            block.appendChild(el('div',{class:'a4-match'}, el('div',{}, txt)));
+          }else{
+            const post = m.querySelector('.postazione')?.textContent || `Postazione ${i+1}`;
+            block.appendChild(el('div',{class:'a4-match'},
+              el('div',{class:'a4-post'}, post),
+              el('div',{}, txt),
+              el('div',{class:'a4-scores'}, el('div',{class:'box'}), el('div',{class:'box'}))  /* larghi 64x36 */
+            ));
+          }
+        });
+        sheet.appendChild(block);
+      });
+
+      sheet.style.position = 'fixed'; sheet.style.left = '-9999px';
+      document.body.appendChild(sheet);
+
+      const canvas = await html2canvas(sheet, {
+        backgroundColor:'#ffffff',
+        scale: 2,
+        width: sheet.offsetWidth,
+        height: sheet.offsetHeight
+      });
+
+      document.body.removeChild(sheet);
+
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = 'torneo-magic-calendario.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    /* ========= Export: PDF con campi compilabili ========= */
+    async function exportPDF(){
+      const schedule = $('#output');
+      if(!schedule.children.length){ alert('Genera prima il calendario.'); return; }
+
+      const { PDFDocument, StandardFonts, rgb } = PDFLib;
+      const pdfDoc = await PDFDocument.create();
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      const form = pdfDoc.getForm();
+
+      // A4 in punti: 595 x 842
+      const A4 = { w: 595.28, h: 841.89 };
+      let page = pdfDoc.addPage([A4.w, A4.h]);
+
+      const marginX = 36;
+      const marginY = 36;
+      const lineH = 18;
+      let x = marginX, y = A4.h - marginY;
+
+      function addHeader(){
+        y -= 6;
+        page.drawText("Torneo Magic — Calendario", { x, y, size: 16, font: fontBold, color: rgb(0,0,0) });
+        const ts = new Date().toLocaleString();
+        const tw = font.widthOfTextAtSize(ts, 10);
+        page.drawText(ts, { x: A4.w - marginX - tw, y, size: 10, font, color: rgb(0,0,0) });
+        y -= 10;
+        page.drawLine({ start: {x: marginX, y: y}, end: {x: A4.w - marginX, y: y}, thickness: 1, color: rgb(0,0,0) });
+        y -= 12;
+      }
+      addHeader();
+
+      function ensureSpace(need){
+        if(y - need < marginY){
+          page = pdfDoc.addPage([A4.w, A4.h]);
+          x = marginX; y = A4.h - marginY;
+          addHeader();
+        }
+      }
+
+      const rounds = Array.from(schedule.children);
+      let fieldIdx = 1;
+
+      for (const roundDiv of rounds){
+        const title = roundDiv.querySelector('h3')?.textContent || "Round";
+        ensureSpace(24);
+        page.drawText(title, { x, y, size: 12, font: fontBold, color: rgb(0.1,0.1,0.1) });
+        y -= 16;
+
+        const matches = Array.from(roundDiv.querySelectorAll('.match'));
+        for (const m of matches){
+          const txt = m.querySelector('.vs')?.textContent || '';
+          const post = m.querySelector('.postazione')?.textContent || `Postazione`;
+          const isBye = /BYE/i.test(txt) || /riposa/i.test(txt);
+
+          // altezza blocco
+          const blockH = isBye ? 20 : 28;
+          ensureSpace(blockH + 8);
+
+          // box
+          const bx = x, bw = A4.w - marginX*2, by = y - blockH;
+          page.drawRectangle({ x: bx, y: by, width: bw, height: blockH, borderColor: rgb(0.8,0.8,0.8), borderWidth: 1, color: rgb(0.98,0.98,0.98) });
+
+          // testo
+          const postW = fontBold.widthOfTextAtSize(post, 11);
+          page.drawText(post, { x: bx + 10, y: by + blockH - 14, size: 11, font: fontBold, color: rgb(0.15,0.15,0.15) });
+
+          page.drawText(txt, { x: bx + bw/2 - fontBold.widthOfTextAtSize(txt, 11)/2, y: by + 8, size: 11, font: fontBold, color: rgb(0.1,0.1,0.1) });
+
+          if(!isBye){
+            // campi punteggio (compilabili)
+            const fieldW = 64, fieldH = 18;
+            const gap = 10;
+            const fx1 = bx + bw - (fieldW*2 + gap + 10);
+            const fy = by + (blockH - fieldH)/2;
+
+            const f1 = form.createTextField(`score_${fieldIdx}_a`);
+            f1.setText('');
+            f1.addToPage(page, { x: fx1, y: fy, width: fieldW, height: fieldH });
+            f1.updateAppearances(font);
+
+            const f2 = form.createTextField(`score_${fieldIdx}_b`);
+            f2.setText('');
+            f2.addToPage(page, { x: fx1 + fieldW + gap, y: fy, width: fieldW, height: fieldH });
+            f2.updateAppearances(font);
+
+            fieldIdx++;
+          }
+
+          y = by - 8;
+        }
+      }
+
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'torneo-magic-calendario.pdf';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=> URL.revokeObjectURL(url), 1500);
+    }
+
+    /* ========= Wire UI ========= */
+    const btnAdd = $('#btnAdd');
+    const btnShuffle = $('#btnShuffle');
+    const btnGenerate = $('#btnGenerate');
+
+    const btnExport = $('#btnExport');
+    const exportMenu = $('#exportMenu');
+    const optImage = $('#optImage');
+    const optPDF = $('#optPDF');
+
+    btnExport.addEventListener('click', () => {
+      exportMenu.classList.toggle('open');
+    });
+    document.addEventListener('click', (e) => {
+      if(!exportMenu.contains(e.target) && e.target !== btnExport){
+        exportMenu.classList.remove('open');
+      }
+    });
+    optImage.addEventListener('click', () => { exportMenu.classList.remove('open'); exportImageA4(); });
+    optPDF.addEventListener('click', () => { exportMenu.classList.remove('open'); exportPDF(); });
+
+    btnAdd.addEventListener('click', () => addPlayerRow(''));
+    btnShuffle.addEventListener('click', () => {
+      const rows = $$('#playersList .player-row');
+      if(rows.length < 2){ alert('Aggiungi almeno due giocatori.'); return; }
+      const vals = rows.map(r => r.querySelector('input').value.trim()).filter(Boolean);
+      if(vals.length < 2){ alert('Inserisci almeno due nomi validi.'); return; }
+      shuffle(vals);
+      let i=0; rows.forEach(r => r.querySelector('input').value = vals[i++] ?? '');
+      validateDuplicates(false);
+    });
+
+    btnGenerate.addEventListener('click', () => {
+      const players = getPlayers();
+      if(players.length < 2){ alert('Inserisci almeno due giocatori.'); return; }
+      if(!validateDuplicates(true)) return;
+      shuffle(players);
+      const {roundsData, hadBye} = generateRoundRobin(players);
+      renderSchedule(roundsData, hadBye, players.length);
+      $('#output')?.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+
+    // bootstrap
+    addPlayerRow('');
+
+    /* ===== Funzioni duplicate (riusate) definite dopo per chiarezza ===== */
+    function findDuplicates(names){
+      const seen = new Map(); const dups = new Set();
+      for(const n of names){ const k = n.toLowerCase(); if(seen.has(k)) dups.add(seen.get(k)); else seen.set(k, n); }
+      return Array.from(dups);
+    }
+  </script>
+</body>
+</html>
