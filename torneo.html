@@ -2,35 +2,24 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <!-- NESSUNO ZOOM -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, maximum-scale=1.0" />
   <title>Torneo Magic — App</title>
 
-  <!-- Font: header elegante + testo moderno -->
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
-  <!-- Export immagine -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <!-- PDF con campi modificabili -->
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
 
   <style>
     :root{
-      /* Vibe ispirata a magic.wizards.com */
-      --bg: #0a0c10;
-      --bg2:#0c0f15;
-      --panel:#14171f;
-      --ink:#f4efe7;
-      --muted:#a8a19a;
-      --line:#222634;
-      --gold:#ddb972;       /* accento oro caldo */
-      --crimson:#9f2e24;    /* rosso profondo */
-      --danger:#c93c3c;
-
-      --btn-bg: #191c24;
-      --btn-border: #2a2e3b;
-      --btn-hover: #1c2029;
+      --bg: #0a0c10; --bg2:#0c0f15; --panel:#14171f; --ink:#f4efe7; --muted:#a8a19a;
+      --line:#222634; --gold:#ddb972; --crimson:#9f2e24; --danger:#c93c3c;
+      --btn-bg:#191c24; --btn-border:#2a2e3b; --btn-hover:#1c2029;
     }
     *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
     html, body { height:100%; }
+    /* aiuta a prevenire il double-tap zoom su mobile */
+    html { touch-action: manipulation; }
     body{
       margin:0; color:var(--ink);
       background:
@@ -39,17 +28,8 @@
       font-family: "Source Sans 3", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
 
-    /* App container */
-    .app{
-      max-width: 520px;
-      margin: 0 auto;
-      min-height: 100dvh;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      box-shadow: 0 8px 20px rgba(0,0,0,.45);
-    }
+    .app{ max-width: 520px; margin: 0 auto; min-height: 100dvh; display:grid; grid-template-rows:auto 1fr auto; box-shadow:0 8px 20px rgba(0,0,0,.45); }
 
-    /* App Bar */
     .appbar{
       position: sticky; top:0; z-index:30;
       padding: calc(env(safe-area-inset-top, 0px) + 10px) 12px 10px;
@@ -58,20 +38,16 @@
       display:flex; align-items:center; justify-content:space-between; gap:8px;
     }
     .brand{ display:flex; flex-direction:column; line-height:1.05; }
-    .title{
-      font-family: Cinzel, serif; font-weight:700; letter-spacing:.4px; font-size: 19px;
-    }
-    .subtitle{ font-size:12px; color:var(--muted); }
+    .title{ font-family:Cinzel,serif; font-weight:700; letter-spacing:.4px; font-size:19px; }
+    .subtitle{ font-size:12px; color:var(--muted) }
 
-    /* Export menu */
     .iconbtn{
       border:1px solid var(--btn-border);
       background: var(--btn-bg);
       color:var(--ink);
       border-radius: 10px;
-      padding: 8px 10px;   /* più piccolo e minimale */
-      font-weight:700; font-size:14px;
-      cursor:pointer;
+      padding: 8px 10px;
+      font-weight:700; font-size:14px; cursor:pointer;
     }
     .iconbtn:hover{ background: var(--btn-hover); }
     .menu{
@@ -88,131 +64,68 @@
     .menu button:last-child{ border-bottom:none; }
     .menu button:hover{ background:#141924; }
 
-    /* Content */
     .content{ overflow:auto; padding: 12px 12px 84px; }
 
-    /* Card */
-    .card{
-      background: linear-gradient(180deg, #171a22, #141823);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px;
-      margin: 10px 0;
-    }
-    .card-header{
-      display:flex; align-items:baseline; justify-content:space-between; gap:8px;
-      margin-bottom: 8px;
-      border-bottom: 1px dashed rgba(255,255,255,.08);
-      padding-bottom: 6px;
-    }
-    .card-title{
-      font-family: Cinzel, serif; font-size: 15px; color: var(--gold);
-      letter-spacing:.3px;
-    }
-    .card-note{ font-size: 12px; color: var(--muted); }
+    .card{ background: linear-gradient(180deg, #171a22, #141823); border:1px solid var(--line); border-radius:14px; padding:12px; margin:10px 0; }
+    .card-header{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:8px; border-bottom:1px dashed rgba(255,255,255,.08); padding-bottom:6px; }
+    .card-title{ font-family:Cinzel,serif; font-size:15px; color:var(--gold); letter-spacing:.3px; }
+    .card-note{ font-size:12px; color:var(--muted); }
 
-    /* Players */
     .players-list{ display:flex; flex-direction:column; gap:8px; }
     .player-row{
-      display:grid; grid-template-columns: auto 1fr auto; gap:8px; align-items:center;
-      padding:8px; border-radius: 10px;
-      background: linear-gradient(180deg, transparent, rgba(0,0,0,.03));
-      border:1px solid var(--line);
-      transition: box-shadow .15s ease, border-color .15s ease;
+      display:grid; grid-template-columns:auto 1fr auto; gap:8px; align-items:center;
+      padding:8px; border-radius:10px; background:linear-gradient(180deg, transparent, rgba(0,0,0,.03));
+      border:1px solid var(--line); transition: box-shadow .15s ease, border-color .15s ease;
     }
-    .player-row.duplicate{
-      border-color: var(--danger);
-      box-shadow: 0 0 0 3px rgba(201,60,60,.18);
-    }
-    .player-num{ width: 26px; text-align:right; color: var(--muted); font-weight:700; }
+    .player-row.duplicate{ border-color: var(--danger); box-shadow:0 0 0 3px rgba(201,60,60,.18); }
+    .player-num{ width:26px; text-align:right; color:var(--muted); font-weight:700; }
     .player-row input[type="text"]{
       width:100%; background:#0f1218; color:var(--ink);
-      border:1px solid var(--line);
-      border-radius: 8px; padding: 10px 10px; font-size:15px; outline:none;
+      border:1px solid var(--line); border-radius:8px; padding:10px 10px; font-size:15px; outline:none;
       transition: border-color .12s ease, box-shadow .12s ease;
     }
     .player-row input[type="text"]:focus{ border-color: var(--gold); box-shadow: 0 0 0 3px rgba(221,185,114,.20); }
-    .player-row input[type="text"].duplicate{
-      border-color: var(--danger);
-      box-shadow: 0 0 0 3px rgba(201,60,60,.18);
-    }
-    .btn-plain{
-      border:1px solid var(--btn-border);
-      background: var(--btn-bg);
-      color:var(--ink);
-      border-radius: 8px;
-      padding: 8px 10px;     /* più piccolo */
-      font-weight:700; font-size:13px;
-      cursor:pointer;
-    }
+    .player-row input[type="text"].duplicate{ border-color: var(--danger); box-shadow:0 0 0 3px rgba(201,60,60,.18); }
+    .btn-plain{ border:1px solid var(--btn-border); background:var(--btn-bg); color:var(--ink); border-radius:8px; padding:8px 10px; font-weight:700; font-size:13px; cursor:pointer; }
     .btn-plain:hover{ background: var(--btn-hover); }
 
-    /* Rounds */
-    .round{ border:1px solid var(--line); border-radius:12px; padding:10px; background: linear-gradient(180deg, transparent, rgba(0,0,0,.03)); }
+    .round{ border:1px solid var(--line); border-radius:12px; padding:10px; background:linear-gradient(180deg, transparent, rgba(0,0,0,.03)); }
     .round h3{
-      margin: 4px 0 8px; font-family: Cinzel, serif; font-size: 14px; color: var(--crimson);
+      margin: 4px 0 8px; font-family:Cinzel,serif; font-size:14px; color:var(--crimson);
       text-align:center; letter-spacing:.2px;
+      /* Per scrollIntoView: ferma il titolo ben sotto la appbar */
+      scroll-margin-top: 80px;
     }
     .matches{ display:flex; flex-direction:column; gap:8px; }
-    .match{
-      border:1px solid var(--line); border-radius: 10px;
-      background: #161a24;
-      padding: 10px;
-      display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px;
-    }
-    .postazione{ font-family: Cinzel, serif; font-weight:700; letter-spacing:.3px; color: var(--gold); }
-    .vs{ font-weight: 700; font-size: 15px; color: var(--ink); }
+    .match{ border:1px solid var(--line); border-radius:10px; background:#161a24; padding:10px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; }
+    .postazione{ font-family:Cinzel,serif; font-weight:700; letter-spacing:.3px; color:var(--gold); }
+    .vs{ font-weight:700; font-size:15px; color:var(--ink); }
     .bye{ opacity:.9; font-style:italic }
 
-    /* Action bar (minimale, piccoli bottoni) */
-    .actionbar{
-      position: sticky; bottom: 0; z-index: 20;
-      padding: 8px 12px calc(env(safe-area-inset-bottom, 0px) + 8px);
-      background: var(--panel);
-      border-top: 1px solid var(--line);
-      display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;
-    }
-    .btn{
-      border:1px solid var(--btn-border);
-      background: var(--btn-bg);
-      color:var(--ink);
-      border-radius: 10px;
-      padding: 10px 10px;     /* più piccolo e minimale */
-      font-weight:700; font-size:13px;
-      cursor:pointer;
-    }
+    .actionbar{ position:sticky; bottom:0; z-index:20; padding:8px 12px calc(env(safe-area-inset-bottom, 0px) + 8px); background:var(--panel); border-top:1px solid var(--line); display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+    .btn{ border:1px solid var(--btn-border); background:var(--btn-bg); color:var(--ink); border-radius:10px; padding:10px 10px; font-weight:700; font-size:13px; cursor:pointer; }
     .btn:hover{ background: var(--btn-hover); }
 
     .footer-note{ color:var(--muted); font-size:12px; margin-top:6px }
 
-    /* A4 sheet (per immagine) */
-    .a4-sheet{
-      width: 794px; min-height: 1123px; background: #fff; color:#222;
-      padding: 24px; border: 1px solid #ddd; font-family: "Source Sans 3", system-ui, sans-serif;
-    }
+    .a4-sheet{ width:794px; min-height:1123px; background:#fff; color:#222; padding:24px; border:1px solid #ddd; font-family:"Source Sans 3", system-ui, sans-serif; }
     .a4-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid #333; }
-    .a4-title{ font-family: Cinzel, serif; font-weight:700; font-size: 22px; }
-    .a4-round{ margin-top: 10px; }
+    .a4-title{ font-family:Cinzel,serif; font-weight:700; font-size:22px }
+    .a4-round{ margin-top:10px }
     .a4-round h4{ margin:10px 0 4px; font-family:Cinzel,serif; font-size:16px }
-    .a4-match{
-      display:flex; justify-content:space-between; align-items:center; gap:10px;
-      border:1px solid #ddd; border-radius:8px; padding:10px 12px; margin-top:8px;
-      background:#fbfbfb; font-size:14px;
-    }
-    .a4-post{ font-weight:700; min-width: 120px; }
-    .a4-scores{ display:flex; gap:12px; align-items:center; }
-    .a4-scores .box{ width: 64px; height: 36px; border:1px solid #bbb; border-radius:6px; background:#fff; }
+    .a4-match{ display:flex; justify-content:space-between; align-items:center; gap:10px; border:1px solid #ddd; border-radius:8px; padding:10px 12px; margin-top:8px; background:#fbfbfb; font-size:14px }
+    .a4-post{ font-weight:700; min-width:120px }
+    .a4-scores{ display:flex; gap:12px; align-items:center }
+    .a4-scores .box{ width:64px; height:36px; border:1px solid #bbb; border-radius:6px; background:#fff }
   </style>
 </head>
 <body>
   <div class="app" id="appRoot">
-    <!-- App Bar -->
     <header class="appbar">
       <div class="brand">
         <div class="title">Torneo Magic</div>
         <div class="subtitle">Tutti contro tutti · Postazioni · Export A4</div>
       </div>
-
       <div style="position:relative">
         <button class="iconbtn" id="btnExport">Esporta</button>
         <div class="menu" id="exportMenu" role="menu" aria-label="Esporta">
@@ -222,20 +135,16 @@
       </div>
     </header>
 
-    <!-- Contenuti -->
     <main class="content" id="content">
-      <!-- Giocatori -->
       <section class="card" aria-labelledby="players-title">
         <div class="card-header">
           <div class="card-title" id="players-title">Giocatori</div>
           <div class="card-note">Numerati · Duplicati evidenziati</div>
         </div>
         <div id="playersList" class="players-list" aria-live="polite"></div>
-
-        <div class="footer-note">Se i giocatori sono dispari verrà inserito un <em>BYE</em> (riposo) che comparirà in cima al round.</div>
+        <div class="footer-note">Se i giocatori sono dispari verrà inserito un <em>BYE</em> in cima al round.</div>
       </section>
 
-      <!-- Calendario -->
       <section class="card" aria-labelledby="calendar-title">
         <div class="card-header">
           <div class="card-title" id="calendar-title">Calendario</div>
@@ -245,7 +154,6 @@
       </section>
     </main>
 
-    <!-- Action Bar (minimale) -->
     <nav class="actionbar" aria-label="Azioni">
       <button class="btn" id="btnAdd">+ Aggiungi</button>
       <button class="btn" id="btnShuffle">Mescola</button>
@@ -254,7 +162,6 @@
   </div>
 
   <script>
-    /* ========= Helpers ========= */
     const $ = s => document.querySelector(s);
     const $$ = s => Array.from(document.querySelectorAll(s));
     function el(tag, attrs={}, ...children){
@@ -279,7 +186,7 @@
       return arr;
     }
 
-    /* ========= Giocatori ========= */
+    /* ==== Giocatori ==== */
     function updatePlayerNumbers(){
       $$('.player-row .player-num').forEach((n,i)=> n.textContent = (i+1) + '.');
     }
@@ -294,6 +201,19 @@
       $('#playersList').appendChild(row);
       updatePlayerNumbers();
 
+      // ENTER = aggiungi nuova riga (se non vuoto)
+      input.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter'){
+          e.preventDefault();
+          if(input.value.trim()){
+            const newRow = addPlayerRow('');
+            // focus subito sul nuovo input
+            newRow.querySelector('input').focus();
+          }
+        }
+      });
+
+      // validazione live duplicati
       input.addEventListener('input', () => validateDuplicates(false));
       input.focus();
       return row;
@@ -301,13 +221,11 @@
 
     function validateDuplicates(showAlert){
       const inputs = getPlayerInputs();
-      // reset
       inputs.forEach(inp => {
         inp.classList.remove('duplicate');
         inp.closest('.player-row')?.classList.remove('duplicate');
       });
-      // collect
-      const map = new Map(); // lower -> [inputs]
+      const map = new Map();
       inputs.forEach(inp => {
         const val = inp.value.trim();
         if(!val) return;
@@ -326,7 +244,8 @@
           names.push(group[0].value.trim());
         });
         if(showAlert){
-          alert('Ci sono nomi duplicati (non ammessi):\\n- ' + names.join('\\n- ') + '\\nModifica o rimuovi i doppioni e riprova.');
+          // MESSAGGIO PULITO (niente backslash letterali)
+          alert('Ci sono nomi duplicati (non ammessi):\n- ' + names.join('\n- ') + '\nModifica o rimuovi i doppioni e riprova.');
         }
         return false;
       }
@@ -343,7 +262,7 @@
       validateDuplicates(false);
     }
 
-    /* ========= Round Robin ========= */
+    /* ==== Round Robin ==== */
     function generateRoundRobin(players){
       const names = [...players];
       let hadBye = false;
@@ -378,10 +297,10 @@
 
       roundsData.forEach((pairs, idx) => {
         const round = el('div', {class:'round'});
-        round.appendChild(el('h3', {}, `Round ${idx+1}`));
+        const title = el('h3', {}, `Round ${idx+1}`);
+        round.appendChild(title);
         const list = el('div', {class:'matches'});
 
-        // BYE in cima
         const byeItems = [];
         const normalItems = [];
         let post = 1;
@@ -400,6 +319,7 @@
             post++;
           }
         });
+
         byeItems.forEach(m => list.appendChild(m));
         normalItems.forEach(m => list.appendChild(m));
 
@@ -408,7 +328,7 @@
       });
     }
 
-    /* ========= Export: PNG ========= */
+    /* ==== Export PNG ==== */
     async function exportImageA4(){
       const schedule = $('#output');
       if(!schedule.children.length){ alert('Genera prima il calendario.'); return; }
@@ -433,7 +353,7 @@
             block.appendChild(el('div',{class:'a4-match'},
               el('div',{class:'a4-post'}, post),
               el('div',{}, txt),
-              el('div',{class:'a4-scores'}, el('div',{class:'box'}), el('div',{class:'box'}))  /* larghi 64x36 */
+              el('div',{class:'a4-scores'}, el('div',{class:'box'}), el('div',{class:'box'}))
             ));
           }
         });
@@ -460,7 +380,7 @@
       a.remove();
     }
 
-    /* ========= Export: PDF con campi compilabili ========= */
+    /* ==== Export PDF (compilabile) ==== */
     async function exportPDF(){
       const schedule = $('#output');
       if(!schedule.children.length){ alert('Genera prima il calendario.'); return; }
@@ -471,13 +391,10 @@
       const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
       const form = pdfDoc.getForm();
 
-      // A4 in punti: 595 x 842
       const A4 = { w: 595.28, h: 841.89 };
       let page = pdfDoc.addPage([A4.w, A4.h]);
 
-      const marginX = 36;
-      const marginY = 36;
-      const lineH = 18;
+      const marginX = 36, marginY = 36;
       let x = marginX, y = A4.h - marginY;
 
       function addHeader(){
@@ -490,8 +407,6 @@
         page.drawLine({ start: {x: marginX, y: y}, end: {x: A4.w - marginX, y: y}, thickness: 1, color: rgb(0,0,0) });
         y -= 12;
       }
-      addHeader();
-
       function ensureSpace(need){
         if(y - need < marginY){
           page = pdfDoc.addPage([A4.w, A4.h]);
@@ -499,6 +414,7 @@
           addHeader();
         }
       }
+      addHeader();
 
       const rounds = Array.from(schedule.children);
       let fieldIdx = 1;
@@ -515,37 +431,22 @@
           const post = m.querySelector('.postazione')?.textContent || `Postazione`;
           const isBye = /BYE/i.test(txt) || /riposa/i.test(txt);
 
-          // altezza blocco
           const blockH = isBye ? 20 : 28;
           ensureSpace(blockH + 8);
 
-          // box
           const bx = x, bw = A4.w - marginX*2, by = y - blockH;
           page.drawRectangle({ x: bx, y: by, width: bw, height: blockH, borderColor: rgb(0.8,0.8,0.8), borderWidth: 1, color: rgb(0.98,0.98,0.98) });
 
-          // testo
-          const postW = fontBold.widthOfTextAtSize(post, 11);
           page.drawText(post, { x: bx + 10, y: by + blockH - 14, size: 11, font: fontBold, color: rgb(0.15,0.15,0.15) });
-
           page.drawText(txt, { x: bx + bw/2 - fontBold.widthOfTextAtSize(txt, 11)/2, y: by + 8, size: 11, font: fontBold, color: rgb(0.1,0.1,0.1) });
 
           if(!isBye){
-            // campi punteggio (compilabili)
-            const fieldW = 64, fieldH = 18;
-            const gap = 10;
+            const fieldW = 64, fieldH = 18, gap = 10;
             const fx1 = bx + bw - (fieldW*2 + gap + 10);
             const fy = by + (blockH - fieldH)/2;
 
-            const f1 = form.createTextField(`score_${fieldIdx}_a`);
-            f1.setText('');
-            f1.addToPage(page, { x: fx1, y: fy, width: fieldW, height: fieldH });
-            f1.updateAppearances(font);
-
-            const f2 = form.createTextField(`score_${fieldIdx}_b`);
-            f2.setText('');
-            f2.addToPage(page, { x: fx1 + fieldW + gap, y: fy, width: fieldW, height: fieldH });
-            f2.updateAppearances(font);
-
+            const f1 = form.createTextField(`score_${fieldIdx}_a`); f1.setText(''); f1.addToPage(page, { x: fx1, y: fy, width: fieldW, height: fieldH }); f1.updateAppearances(font);
+            const f2 = form.createTextField(`score_${fieldIdx}_b`); f2.setText(''); f2.addToPage(page, { x: fx1 + fieldW + gap, y: fy, width: fieldW, height: fieldH }); f2.updateAppearances(font);
             fieldIdx++;
           }
 
@@ -556,13 +457,12 @@
       const pdfBytes = await pdfDoc.save();
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'torneo-magic-calendario.pdf';
+      const a = document.createElement('a'); a.href = url; a.download = 'torneo-magic-calendario.pdf';
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(()=> URL.revokeObjectURL(url), 1500);
     }
 
-    /* ========= Wire UI ========= */
+    /* ==== Wire UI ==== */
     const btnAdd = $('#btnAdd');
     const btnShuffle = $('#btnShuffle');
     const btnGenerate = $('#btnGenerate');
@@ -601,18 +501,16 @@
       shuffle(players);
       const {roundsData, hadBye} = generateRoundRobin(players);
       renderSchedule(roundsData, hadBye, players.length);
-      $('#output')?.scrollIntoView({behavior:'smooth', block:'start'});
+
+      // SCROLL esatto al titolo del Round 1
+      const firstRoundTitle = document.querySelector('#output .round h3');
+      if(firstRoundTitle){
+        firstRoundTitle.scrollIntoView({ behavior:'smooth', block:'start' });
+      }
     });
 
     // bootstrap
     addPlayerRow('');
-
-    /* ===== Funzioni duplicate (riusate) definite dopo per chiarezza ===== */
-    function findDuplicates(names){
-      const seen = new Map(); const dups = new Set();
-      for(const n of names){ const k = n.toLowerCase(); if(seen.has(k)) dups.add(seen.get(k)); else seen.set(k, n); }
-      return Array.from(dups);
-    }
   </script>
 </body>
 </html>
