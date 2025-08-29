@@ -2,14 +2,14 @@
   "name": "Torneo Magic",
   "short_name": "Magic Torneo",
   "description": "Round-robin, postazioni, export PNG/PDF",
-  "start_url": "/repo/torneo/",
-  "scope": "/repo/",
+  "start_url": "./", 
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0a0c10",
   "theme_color": "#0a0c10",
   "icons": [
-    { "src": "/repo/torneo/assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/repo/torneo/assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "/repo/torneo/assets/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "./assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "./assets/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
