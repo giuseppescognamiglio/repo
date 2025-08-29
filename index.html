@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Magic Tools — Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0a0c10;--panel:#14171f;--ink:#f4efe7;--muted:#a8a19a;--line:#222634;--gold:#ddb972;
+      --btn:#191c24;--btnb:#2a2e3b;--btnh:#1c2029;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Source Sans 3",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--ink);background:linear-gradient(180deg,var(--bg),#0c0f15 60%,var(--bg));min-height:100dvh;}
+    .wrap{max-width:800px;margin:0 auto;padding:28px 16px}
+    header{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:18px}
+    .title{font-family:Cinzel,serif;font-weight:700;letter-spacing:.4px;font-size:26px}
+    .sub{color:var(--muted)}
+    .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+    .card{background:linear-gradient(180deg,#171a22,#141823);border:1px solid var(--line);border-radius:14px;padding:14px}
+    .card h3{margin:0 0 6px;font-family:Cinzel,serif;color:var(--gold);font-size:18px}
+    .card p{margin:0 0 12px;color:var(--muted)}
+    .btn{display:inline-block;border:1px solid var(--btnb);background:var(--btn);color:var(--ink);
+      border-radius:10px;padding:9px 12px;font-weight:700;font-size:14px;text-decoration:none}
+    .btn:hover{background:var(--btnh)}
+    footer{margin-top:28px;color:var(--muted);font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <div class="title">Magic Tools</div>
+        <div class="sub">Piccole utility per tornei e organizzazione</div>
+      </div>
+    </header>
+
+    <section class="grid">
+      <article class="card">
+        <h3>Torneo Round-Robin</h3>
+        <p>Genera postazioni e calendario “tutti contro tutti”, export in PNG o PDF compilabile.</p>
+        <a class="btn" href="./torneo.html">Apri l’app del torneo</a>
+      </article>
+
+      <article class="card">
+        <h3>(Placeholder) Deck Tracker</h3>
+        <p>Spazio per una futura pagina (stats, liste, ecc.).</p>
+        <a class="btn" href="#" onclick="alert('In arrivo');return false;">In arrivo</a>
+      </article>
+
+      <article class="card">
+        <h3>(Placeholder) Tools vari</h3>
+        <p>Ordina nomi, timer round, gestione score…</p>
+        <a class="btn" href="#" onclick="alert('In arrivo');return false;">In arrivo</a>
+      </article>
+    </section>
+
+    <footer>© <span id="y"></span> — Magic Tools non è affiliato a Wizards of the Coast.</footer>
+  </div>
+  <script>document.getElementById('y').textContent=new Date().getFullYear()</script>
+</body>
+</html>
