@@ -4,11 +4,11 @@ const CACHE = "magic-torneo-v1";
 // (Se in futuro aggiungi vendor locali, aggiungili in questa lista.)
 const ASSETS = [
   "/repo/index.html",
-  "/repo/torneo.html",
-  "/repo/manifest.webmanifest",
-  "/repo/assets/icons/icon-192.png",
-  "/repo/assets/icons/icon-512.png",
-  "/repo/assets/icons/maskable-512.png"
+  "/repo/torneo/index.html",
+  "/repo/torneo/manifest.webmanifest",
+  "/repo/torneo/assets/icons/icon-192.png",
+  "/repo/torneo/assets/icons/icon-512.png",
+  "/repo/torneo/assets/icons/maskable-512.png"
 ];
 
 self.addEventListener("install", (e) => {
