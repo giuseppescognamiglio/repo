@@ -1,20 +1,16 @@
 const CACHE = "magic-torneo-v1";
-
-// Metti qui TUTTI i file locali essenziali per l'avvio offline.
-// (Se in futuro aggiungi vendor locali, aggiungili in questa lista.)
 const ASSETS = [
-  "/repo/index.html",
-  "/repo/torneo/index.html",
-  "/repo/torneo/manifest.webmanifest",
-  "/repo/torneo/assets/icons/icon-192.png",
-  "/repo/torneo/assets/icons/icon-512.png",
-  "/repo/torneo/assets/icons/maskable-512.png"
+  "./",                     // index.html
+  "./index.html",
+  "./manifest.webmanifest",
+  "./assets/icons/icon-192.png",
+  "./assets/icons/icon-512.png",
+  "./assets/icons/maskable-512.png"
+  // se aggiungi librerie locali, aggiungile qui
 ];
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(ASSETS))
-  );
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
 });
 
 self.addEventListener("activate", (e) => {
@@ -25,19 +21,17 @@ self.addEventListener("activate", (e) => {
   );
 });
 
-// Cache-first per statici, rete di fallback per il resto (CDN inclusi)
 self.addEventListener("fetch", (e) => {
-  const req = e.request;
   e.respondWith(
-    caches.match(req).then((hit) => {
+    caches.match(e.request).then((hit) => {
       if (hit) return hit;
-      return fetch(req).then((resp) => {
-        // Opzionale: metti in cache in runtime solo richieste stesse-origin
+      return fetch(e.request).then((resp) => {
         try {
-          const url = new URL(req.url);
-          if (url.origin === location.origin) {
+          const url = new URL(e.request.url);
+          // Cachea solo richieste della stessa cartella /torneo/
+          if (url.origin === location.origin && url.pathname.startsWith(location.pathname.replace(/service-worker\.js$/, ""))) {
             const clone = resp.clone();
-            caches.open(CACHE).then((c) => c.put(req, clone));
+            caches.open(CACHE).then((c) => c.put(e.request, clone));
           }
         } catch (_) {}
         return resp;
