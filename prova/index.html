@@ -2,66 +2,268 @@
 <html lang="it">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>prova — pagina di test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, maximum-scale=1.0">
+  <title>Contavite — Magic</title>
+  <meta name="description" content="Contavite per partite Magic: The Gathering">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg: #fff;
-      --fg: #0a0a0a;
-      --muted: #6a6a6a;
-      --border: #e5e5e5;
+    :root{
+      --bg:#0a0c10; --ink:#f4efe7; --muted:#a8a19a; --line:#222634; --gold:#ddb972;
     }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; margin: 0; }
-    body {
-      background: var(--bg);
-      color: var(--fg);
-      font: 16px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-      -webkit-font-smoothing: antialiased;
-      display: grid;
-      place-items: start center;
-      padding: 48px 16px;
+    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; user-select:none; }
+    html, body{ height:100%; margin:0; }
+    html{ touch-action: manipulation; }
+    body{
+      background:var(--bg); color:var(--ink);
+      font-family:"Source Sans 3", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      overflow:hidden;
     }
-    main {
-      width: 100%;
-      max-width: 720px;
-      border: 1px solid var(--border);
-      padding: 24px;
+
+    .app{ height:100dvh; display:grid; grid-template-rows:auto 1fr; }
+
+    .appbar{
+      position:relative; z-index:20;
+      padding: calc(env(safe-area-inset-top, 0px) + 8px) 12px 8px;
+      background:#14171f; border-bottom:1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
     }
-    header {
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 16px;
-      margin-bottom: 32px;
+    .title{ font-family:Cinzel,serif; font-weight:700; letter-spacing:.4px; font-size:16px; color:var(--gold); }
+    .iconbtn{
+      border:1px solid #2a2e3b; background:#191c24; color:var(--ink);
+      border-radius:10px; padding:6px 10px; font-size:16px; cursor:pointer; line-height:1;
     }
-    .title {
-      font-size: 20px;
-      letter-spacing: .5px;
-      margin: 0 0 4px 0;
-      text-transform: lowercase;
+    .iconbtn:hover{ background:#1c2029; }
+
+    .grid{ display:grid; gap:2px; background:var(--line); overflow:hidden; }
+    .grid.p2{ grid-template-rows:1fr 1fr; }
+    .grid.p3{ grid-template-rows:1fr 1fr; grid-template-columns:1fr 1fr; }
+    .grid.p3 .panel:nth-child(1){ grid-column:1 / span 2; }
+    .grid.p4{ grid-template-rows:1fr 1fr; grid-template-columns:1fr 1fr; }
+
+    .panel{
+      position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center;
     }
-    .subtitle {
-      margin: 0;
-      color: var(--muted);
+    .panel.flip{ transform:rotate(180deg); }
+
+    .zone{
+      position:absolute; left:0; right:0; height:50%; border:none; background:transparent;
+      color:inherit; cursor:pointer; display:flex; align-items:flex-end; justify-content:center;
+      font-size:28px; font-weight:700; padding-bottom:6px; opacity:0; transition:opacity .15s;
     }
-    a.back {
-      color: inherit;
-      text-decoration: none;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 2px;
+    .zone.plus{ top:0; align-items:flex-start; padding-top:6px; padding-bottom:0; }
+    .zone.minus{ bottom:0; }
+    .panel:active .zone, .zone:active{ opacity:.35; }
+
+    .life{
+      font-family:Cinzel,serif; font-weight:700; font-size:min(20vw, 96px);
+      pointer-events:none; z-index:2; text-shadow:0 2px 12px rgba(0,0,0,.4);
     }
-    a.back:hover { border-bottom-color: var(--fg); }
+
+    .step{
+      position:absolute; right:8px; z-index:3;
+      border:1px solid rgba(255,255,255,.25); background:rgba(0,0,0,.25); color:inherit;
+      border-radius:8px; padding:4px 8px; font-size:13px; font-weight:700; cursor:pointer;
+    }
+    .step.plus5{ top:8px; }
+    .step.minus5{ bottom:8px; }
+    .step:active{ background:rgba(0,0,0,.5); }
+
+    .name{
+      position:absolute; top:8px; left:10px; z-index:3; font-size:12px; letter-spacing:.5px;
+      color:rgba(255,255,255,.75); text-transform:uppercase;
+    }
+    .panel.flip .name{ top:auto; bottom:8px; left:auto; right:10px; }
+    .panel.flip .step.plus5{ top:auto; bottom:8px; }
+    .panel.flip .step.minus5{ bottom:auto; top:8px; }
+
+    /* Colori ispirati alle cinque tinte del mana */
+    .c-w{ background:linear-gradient(180deg,#e9e2c9,#cfc59f); color:#2a2415; }
+    .c-u{ background:linear-gradient(180deg,#0f5f8c,#0a3c5c); color:#eaf4fb; }
+    .c-b{ background:linear-gradient(180deg,#2b2730,#141218); color:#e9e4de; }
+    .c-r{ background:linear-gradient(180deg,#9c3324,#6b1f16); color:#fbeee9; }
+    .c-g{ background:linear-gradient(180deg,#2f6b3a,#1c4425); color:#eaf6ec; }
+
+    /* Overlay impostazioni */
+    .overlay{
+      position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:40;
+      display:none; align-items:center; justify-content:center; padding:16px;
+    }
+    .overlay.open{ display:flex; }
+    .sheet{
+      width:100%; max-width:360px; background:#14171f; border:1px solid var(--line);
+      border-radius:14px; padding:18px; color:var(--ink);
+    }
+    .sheet h2{ font-family:Cinzel,serif; font-size:16px; color:var(--gold); margin:0 0 14px; }
+    .field{ margin-bottom:14px; }
+    .field label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+    .segmented{ display:flex; gap:6px; }
+    .segmented button{
+      flex:1; padding:8px 0; border:1px solid #2a2e3b; background:#191c24; color:var(--ink);
+      border-radius:8px; font-weight:700; cursor:pointer;
+    }
+    .segmented button.active{ background:var(--gold); color:#241d0d; border-color:var(--gold); }
+    .sheet-actions{ display:flex; gap:8px; margin-top:18px; }
+    .sheet-actions button{
+      flex:1; padding:10px 0; border-radius:8px; font-weight:700; cursor:pointer; border:1px solid #2a2e3b;
+    }
+    .btn-reset{ background:#c93c3c; color:#fff; border-color:#c93c3c; }
+    .btn-close{ background:#191c24; color:var(--ink); }
   </style>
 </head>
 <body>
-  <main>
-    <header>
-      <h1 class="title">pagina di prova</h1>
-      <p class="subtitle">test — nessuna funzionalità, serve solo a verificare la pubblicazione</p>
-    </header>
+  <div class="app">
+    <div class="appbar">
+      <span class="title">Contavite</span>
+      <button class="iconbtn" id="btnSettings" aria-label="Impostazioni">⚙︎</button>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
 
-    <p>Se stai leggendo questo, la pagina è online.</p>
+  <div class="overlay" id="overlay">
+    <div class="sheet">
+      <h2>Impostazioni partita</h2>
 
-    <p><a class="back" href="../">&larr; torna alla home</a></p>
-  </main>
+      <div class="field">
+        <label>Giocatori</label>
+        <div class="segmented" id="segPlayers">
+          <button data-val="2">2</button>
+          <button data-val="3">3</button>
+          <button data-val="4">4</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Vita iniziale</label>
+        <div class="segmented" id="segLife">
+          <button data-val="20">20</button>
+          <button data-val="30">30</button>
+          <button data-val="40">40</button>
+        </div>
+      </div>
+
+      <div class="sheet-actions">
+        <button class="btn-reset" id="btnReset">Reset partita</button>
+        <button class="btn-close" id="btnClose">Chiudi</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const COLORS = ['c-w','c-u','c-b','c-r','c-g'];
+    const STORAGE_KEY = 'contavite-state';
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(raw) return JSON.parse(raw);
+      }catch(e){}
+      return null;
+    }
+
+    let state = loadState() || {
+      playerCount: 2,
+      startingLife: 20,
+      lives: [20, 20]
+    };
+
+    function saveState(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function resetLives(){
+      state.lives = Array.from({length: state.playerCount}, () => state.startingLife);
+      saveState();
+      render();
+    }
+
+    function setPlayerCount(n){
+      state.playerCount = n;
+      resetLives();
+    }
+
+    function setStartingLife(n){
+      state.startingLife = n;
+      resetLives();
+    }
+
+    function changeLife(i, delta){
+      state.lives[i] += delta;
+      saveState();
+      const el = document.querySelector(`.panel[data-i="${i}"] .life`);
+      if(el) el.textContent = state.lives[i];
+    }
+
+    function render(){
+      const grid = document.getElementById('grid');
+      grid.className = `grid p${state.playerCount}`;
+      grid.innerHTML = '';
+
+      for(let i = 0; i < state.playerCount; i++){
+        const panel = document.createElement('div');
+        panel.className = `panel ${COLORS[i % COLORS.length]}`;
+        panel.dataset.i = i;
+
+        // Nei layout a 2 e 4 giocatori, metà pannelli sono ruotati
+        // cosi ogni giocatore legge il proprio totale dal suo lato del tavolo.
+        if((state.playerCount === 2 && i === 0) ||
+           (state.playerCount === 3 && i === 0) ||
+           (state.playerCount === 4 && i < 2)){
+          panel.classList.add('flip');
+        }
+
+        panel.innerHTML = `
+          <span class="name">P${i+1}</span>
+          <button class="zone plus" aria-label="+1"></button>
+          <span class="life">${state.lives[i]}</span>
+          <button class="zone minus" aria-label="-1"></button>
+          <button class="step plus5">+5</button>
+          <button class="step minus5">-5</button>
+        `;
+
+        panel.querySelector('.zone.plus').addEventListener('click', () => changeLife(i, 1));
+        panel.querySelector('.zone.minus').addEventListener('click', () => changeLife(i, -1));
+        panel.querySelector('.step.plus5').addEventListener('click', (e) => { e.stopPropagation(); changeLife(i, 5); });
+        panel.querySelector('.step.minus5').addEventListener('click', (e) => { e.stopPropagation(); changeLife(i, -5); });
+
+        grid.appendChild(panel);
+      }
+    }
+
+    function syncSettingsUI(){
+      document.querySelectorAll('#segPlayers button').forEach(b => {
+        b.classList.toggle('active', Number(b.dataset.val) === state.playerCount);
+      });
+      document.querySelectorAll('#segLife button').forEach(b => {
+        b.classList.toggle('active', Number(b.dataset.val) === state.startingLife);
+      });
+    }
+
+    const overlay = document.getElementById('overlay');
+    document.getElementById('btnSettings').addEventListener('click', () => {
+      syncSettingsUI();
+      overlay.classList.add('open');
+    });
+    document.getElementById('btnClose').addEventListener('click', () => overlay.classList.remove('open'));
+    overlay.addEventListener('click', (e) => { if(e.target === overlay) overlay.classList.remove('open'); });
+
+    document.getElementById('segPlayers').addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if(!btn) return;
+      setPlayerCount(Number(btn.dataset.val));
+      syncSettingsUI();
+    });
+    document.getElementById('segLife').addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if(!btn) return;
+      setStartingLife(Number(btn.dataset.val));
+      syncSettingsUI();
+    });
+    document.getElementById('btnReset').addEventListener('click', () => {
+      resetLives();
+      overlay.classList.remove('open');
+    });
+
+    render();
+  </script>
 </body>
 </html>
