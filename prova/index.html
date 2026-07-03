@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>prova — pagina di test</title>
+  <style>
+    :root {
+      --bg: #fff;
+      --fg: #0a0a0a;
+      --muted: #6a6a6a;
+      --border: #e5e5e5;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font: 16px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      -webkit-font-smoothing: antialiased;
+      display: grid;
+      place-items: start center;
+      padding: 48px 16px;
+    }
+    main {
+      width: 100%;
+      max-width: 720px;
+      border: 1px solid var(--border);
+      padding: 24px;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+      margin-bottom: 32px;
+    }
+    .title {
+      font-size: 20px;
+      letter-spacing: .5px;
+      margin: 0 0 4px 0;
+      text-transform: lowercase;
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+    }
+    a.back {
+      color: inherit;
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2px;
+    }
+    a.back:hover { border-bottom-color: var(--fg); }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1 class="title">pagina di prova</h1>
+      <p class="subtitle">test — nessuna funzionalità, serve solo a verificare la pubblicazione</p>
+    </header>
+
+    <p>Se stai leggendo questo, la pagina è online.</p>
+
+    <p><a class="back" href="../">&larr; torna alla home</a></p>
+  </main>
+</body>
+</html>
