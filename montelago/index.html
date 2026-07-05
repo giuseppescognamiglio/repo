@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Montelago Celtic Festival — Attrezzatura</title>
+  <meta name="description" content="Checklist attrezzatura per il Montelago Celtic Festival">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0e120f; --bg2:#10150f; --panel:#171d17; --card:#1b221a; --ink:#f1efe6; --muted:#a3ab9d;
+      --line:#2a332a; --gold:#c9a84c; --green:#4f7a4a; --danger:#c9564c;
+      --btn-bg:#1c231b; --btn-border:#2f3a2e; --btn-hover:#232b21;
+    }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html, body{ height:100%; margin:0; }
+    body{
+      background:
+        radial-gradient(900px 600px at 10% -10%, rgba(201,168,76,.08), transparent 55%),
+        linear-gradient(180deg, var(--bg), var(--bg2) 60%, var(--bg));
+      color:var(--ink);
+      font-family:"Source Sans 3", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    /* ===== Password gate ===== */
+    .gate{
+      position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center;
+      background:linear-gradient(180deg, var(--bg), var(--bg2)); padding:16px;
+    }
+    .gate-card{
+      width:100%; max-width:360px; background:var(--panel); border:1px solid var(--line);
+      border-radius:14px; padding:24px; text-align:center;
+    }
+    .gate-card h1{ font-family:Cinzel,serif; font-size:19px; color:var(--gold); margin:0 0 6px; }
+    .gate-card p{ color:var(--muted); font-size:13px; margin:0 0 18px; }
+    .gate-card input{
+      width:100%; padding:12px; border-radius:10px; border:1px solid var(--btn-border);
+      background:#11150f; color:var(--ink); font-size:16px; text-align:center; margin-bottom:10px;
+    }
+    .gate-card button{
+      width:100%; padding:12px; border-radius:10px; border:1px solid var(--green);
+      background:var(--green); color:#0e120f; font-weight:700; font-size:15px; cursor:pointer;
+    }
+    .gate-error{ color:var(--danger); font-size:13px; min-height:18px; margin-top:8px; }
+
+    /* ===== App ===== */
+    .app{ max-width:640px; margin:0 auto; min-height:100dvh; display:none; grid-template-rows:auto auto 1fr auto; }
+    .app.show{ display:grid; }
+
+    .appbar{
+      position:sticky; top:0; z-index:30;
+      padding:calc(env(safe-area-inset-top,0px) + 12px) 14px 10px;
+      background:var(--panel); border-bottom:1px solid var(--line);
+    }
+    .appbar .title{ font-family:Cinzel,serif; font-weight:700; font-size:18px; color:var(--gold); }
+    .appbar .subtitle{ font-size:12px; color:var(--muted); margin-top:2px; }
+
+    .progress-wrap{ padding:10px 14px 0; }
+    .progress-label{ display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-bottom:4px; }
+    .progress-bar{ height:8px; border-radius:999px; background:#11150f; border:1px solid var(--line); overflow:hidden; }
+    .progress-fill{ height:100%; background:linear-gradient(90deg, var(--green), var(--gold)); width:0%; transition:width .2s; }
+
+    .toolbar{ display:flex; gap:8px; padding:10px 14px; flex-wrap:wrap; }
+    .toolbar input[type="search"]{
+      flex:1; min-width:120px; padding:9px 10px; border-radius:10px; border:1px solid var(--btn-border);
+      background:var(--btn-bg); color:var(--ink); font-size:14px;
+    }
+    .chipbar{ display:flex; gap:6px; padding:0 14px 10px; overflow-x:auto; }
+    .chip{
+      flex:0 0 auto; padding:6px 12px; border-radius:999px; border:1px solid var(--btn-border);
+      background:var(--btn-bg); color:var(--muted); font-size:12px; cursor:pointer; white-space:nowrap;
+    }
+    .chip.active{ background:var(--green); color:#0e120f; border-color:var(--green); font-weight:700; }
+
+    label.hidebox{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); padding:0 14px 10px; }
+
+    .content{ overflow-y:auto; padding:0 14px 100px; }
+    .group-title{ font-family:Cinzel,serif; color:var(--gold); font-size:13px; letter-spacing:.4px; margin:16px 0 8px; text-transform:uppercase; }
+    .group-title:first-child{ margin-top:4px; }
+
+    .item{
+      display:flex; gap:10px; align-items:center; background:var(--card); border:1px solid var(--line);
+      border-radius:12px; padding:8px; margin-bottom:8px;
+    }
+    .item.packed{ opacity:.5; }
+    .item.packed .item-name{ text-decoration:line-through; }
+    .item-check{ width:22px; height:22px; flex:0 0 auto; accent-color: var(--green); }
+    .item-thumb{
+      width:48px; height:48px; border-radius:8px; object-fit:cover; flex:0 0 auto;
+      background:#11150f; border:1px solid var(--line);
+    }
+    .item-thumb.placeholder{ display:flex; align-items:center; justify-content:center; font-size:20px; }
+    .item-info{ flex:1; min-width:0; }
+    .item-name{ font-weight:700; font-size:14px; }
+    .item-meta{ font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .item-actions{ display:flex; gap:4px; flex:0 0 auto; }
+    .item-actions button{
+      border:1px solid var(--btn-border); background:var(--btn-bg); color:var(--ink);
+      border-radius:8px; padding:6px 8px; font-size:13px; cursor:pointer;
+    }
+    .item-actions button:hover{ background:var(--btn-hover); }
+    .item-actions .del{ color:var(--danger); border-color:var(--danger); }
+
+    .empty{ text-align:center; color:var(--muted); font-size:13px; padding:40px 20px; }
+
+    .footerbar{
+      position:sticky; bottom:0; z-index:20; background:var(--panel); border-top:1px solid var(--line);
+      padding:10px 14px calc(env(safe-area-inset-bottom,0px) + 10px);
+      display:flex; gap:8px; justify-content:center; flex-wrap:wrap;
+    }
+    .fab{
+      border:1px solid var(--green); background:var(--green); color:#0e120f;
+      border-radius:10px; padding:10px 16px; font-weight:700; font-size:14px; cursor:pointer;
+    }
+    .ghost{
+      border:1px solid var(--btn-border); background:var(--btn-bg); color:var(--muted);
+      border-radius:10px; padding:10px 12px; font-size:12px; cursor:pointer;
+    }
+    .ghost.danger{ color:var(--danger); border-color:var(--danger); }
+    input[type="file"]#importFile{ display:none; }
+
+    /* ===== Modal add/edit ===== */
+    .overlay{
+      position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:60;
+      display:none; align-items:flex-end; justify-content:center; padding:0;
+    }
+    .overlay.open{ display:flex; }
+    @media (min-width:560px){ .overlay{ align-items:center; padding:16px; } }
+    .sheet{
+      width:100%; max-width:480px; max-height:92dvh; overflow-y:auto;
+      background:var(--panel); border:1px solid var(--line); border-radius:16px 16px 0 0; padding:18px;
+    }
+    @media (min-width:560px){ .sheet{ border-radius:16px; } }
+    .sheet h2{ font-family:Cinzel,serif; font-size:16px; color:var(--gold); margin:0 0 14px; }
+    .field{ margin-bottom:12px; }
+    .field label{ display:block; font-size:12px; color:var(--muted); margin-bottom:5px; }
+    .field input, .field textarea{
+      width:100%; padding:9px 10px; border-radius:8px; border:1px solid var(--btn-border);
+      background:var(--btn-bg); color:var(--ink); font-size:14px; font-family:inherit;
+    }
+    .field textarea{ resize:vertical; min-height:50px; }
+    .row2{ display:flex; gap:10px; }
+    .row2 > .field{ flex:1; }
+    .imgpick{ display:flex; align-items:center; gap:10px; }
+    .imgpick img{ width:56px; height:56px; border-radius:8px; object-fit:cover; border:1px solid var(--line); background:#11150f; }
+    .sheet-actions{ display:flex; gap:8px; margin-top:16px; }
+    .sheet-actions button{ flex:1; padding:11px 0; border-radius:8px; font-weight:700; cursor:pointer; border:1px solid var(--btn-border); }
+    .btn-save{ background:var(--green); color:#0e120f; border-color:var(--green); }
+    .btn-cancel{ background:var(--btn-bg); color:var(--ink); }
+  </style>
+</head>
+<body>
+
+  <div class="gate" id="gate">
+    <div class="gate-card">
+      <h1>Montelago Celtic Festival</h1>
+      <p>Pagina privata — inserisci la password per accedere alla checklist</p>
+      <input type="password" id="pwInput" placeholder="Password" autocomplete="off">
+      <button id="pwSubmit">Entra</button>
+      <div class="gate-error" id="pwError"></div>
+    </div>
+  </div>
+
+  <div class="app" id="app">
+    <div class="appbar">
+      <div class="title">🍺 Montelago Celtic Festival</div>
+      <div class="subtitle">Attrezzatura &amp; checklist</div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label"><span id="progressText">0/0 pronti</span><span id="progressPct">0%</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <div class="toolbar">
+      <input type="search" id="search" placeholder="Cerca oggetto...">
+    </div>
+    <div class="chipbar" id="chipbar"></div>
+    <label class="hidebox"><input type="checkbox" id="hidePacked"> Mostra solo da portare</label>
+
+    <div class="content" id="content"></div>
+
+    <div class="footerbar">
+      <button class="fab" id="btnAdd">+ Aggiungi oggetto</button>
+      <button class="ghost" id="btnResetPacked">Reset spunte</button>
+      <button class="ghost" id="btnExport">Esporta</button>
+      <button class="ghost" id="btnImport">Importa</button>
+      <button class="ghost danger" id="btnClearAll">Svuota lista</button>
+      <input type="file" id="importFile" accept="application/json">
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="sheet">
+      <h2 id="sheetTitle">Nuovo oggetto</h2>
+      <div class="field">
+        <label>Nome</label>
+        <input type="text" id="fName" placeholder="Es. Tenda 2 posti">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Categoria</label>
+          <input type="text" id="fCategory" list="catList" placeholder="Es. Campeggio">
+          <datalist id="catList">
+            <option value="Campeggio">
+            <option value="Dormire">
+            <option value="Abbigliamento">
+            <option value="Costume / Outfit">
+            <option value="Igiene">
+            <option value="Documenti & Soldi">
+            <option value="Elettronica">
+            <option value="Cibo & Bevande">
+            <option value="Salute & Farmacia">
+            <option value="Altro">
+          </datalist>
+        </div>
+        <div class="field" style="max-width:90px">
+          <label>Quantità</label>
+          <input type="number" id="fQty" min="1" value="1">
+        </div>
+      </div>
+      <div class="field">
+        <label>Note</label>
+        <textarea id="fNote" placeholder="Facoltative"></textarea>
+      </div>
+      <div class="field">
+        <label>Immagine</label>
+        <div class="imgpick">
+          <img id="fImgPreview" alt="">
+          <input type="file" id="fImgFile" accept="image/*">
+        </div>
+      </div>
+      <div class="sheet-actions">
+        <button class="btn-save" id="btnSaveItem">Salva</button>
+        <button class="btn-cancel" id="btnCancelItem">Annulla</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const PW_HASH = 'e1ff7ff5cc57ce0e7cbdc2d851f4fac776dec7c9e1f7a79299b91c85df26a403';
+    const AUTH_KEY = 'montelago-auth';
+    const DATA_KEY = 'montelago-gear-v1';
+
+    async function sha256Hex(text){
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+
+    const gate = document.getElementById('gate');
+    const appEl = document.getElementById('app');
+
+    function unlock(){
+      gate.style.display = 'none';
+      appEl.classList.add('show');
+      render();
+    }
+
+    if(localStorage.getItem(AUTH_KEY) === 'ok'){
+      unlock();
+    }
+
+    document.getElementById('pwSubmit').addEventListener('click', trySubmit);
+    document.getElementById('pwInput').addEventListener('keydown', e => { if(e.key === 'Enter') trySubmit(); });
+
+    async function trySubmit(){
+      const val = document.getElementById('pwInput').value;
+      const hash = await sha256Hex(val);
+      if(hash === PW_HASH){
+        localStorage.setItem(AUTH_KEY, 'ok');
+        unlock();
+      }else{
+        document.getElementById('pwError').textContent = 'Password errata';
+      }
+    }
+
+    // ===== Gear data =====
+    function loadItems(){
+      try{
+        const raw = localStorage.getItem(DATA_KEY);
+        if(raw) return JSON.parse(raw);
+      }catch(e){}
+      return [];
+    }
+    let items = loadItems();
+    function saveItems(){ localStorage.setItem(DATA_KEY, JSON.stringify(items)); }
+
+    let activeCategory = 'Tutti';
+    let searchTerm = '';
+    let hidePacked = false;
+    let editingId = null;
+
+    function resizeImage(file, maxW=420, quality=0.72){
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            const scale = Math.min(1, maxW / img.width);
+            const w = Math.round(img.width * scale);
+            const h = Math.round(img.height * scale);
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.onerror = reject;
+          img.src = reader.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderChips(){
+      const cats = ['Tutti', ...new Set(items.map(i => i.category).filter(Boolean))];
+      const chipbar = document.getElementById('chipbar');
+      chipbar.innerHTML = '';
+      cats.forEach(cat => {
+        const chip = document.createElement('button');
+        chip.className = 'chip' + (cat === activeCategory ? ' active' : '');
+        chip.textContent = cat;
+        chip.addEventListener('click', () => { activeCategory = cat; render(); });
+        chipbar.appendChild(chip);
+      });
+    }
+
+    function render(){
+      renderChips();
+
+      const total = items.length;
+      const packedCount = items.filter(i => i.packed).length;
+      document.getElementById('progressText').textContent = `${packedCount}/${total} pronti`;
+      const pct = total ? Math.round(packedCount / total * 100) : 0;
+      document.getElementById('progressPct').textContent = pct + '%';
+      document.getElementById('progressFill').style.width = pct + '%';
+
+      let visible = items.filter(i => {
+        if(activeCategory !== 'Tutti' && i.category !== activeCategory) return false;
+        if(hidePacked && i.packed) return false;
+        if(searchTerm && !i.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+        return true;
+      });
+
+      const content = document.getElementById('content');
+      content.innerHTML = '';
+
+      if(!visible.length){
+        content.innerHTML = `<div class="empty">${items.length ? 'Nessun oggetto corrisponde ai filtri.' : 'Nessun oggetto ancora. Tocca "+ Aggiungi oggetto" per iniziare la tua lista.'}</div>`;
+        return;
+      }
+
+      const groups = {};
+      visible.forEach(i => {
+        const cat = i.category || 'Altro';
+        (groups[cat] = groups[cat] || []).push(i);
+      });
+
+      Object.keys(groups).sort().forEach(cat => {
+        const h = document.createElement('div');
+        h.className = 'group-title';
+        h.textContent = cat;
+        content.appendChild(h);
+
+        groups[cat].forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'item' + (item.packed ? ' packed' : '');
+
+          const check = document.createElement('input');
+          check.type = 'checkbox';
+          check.className = 'item-check';
+          check.checked = !!item.packed;
+          check.addEventListener('change', () => {
+            item.packed = check.checked;
+            saveItems();
+            render();
+          });
+
+          let thumb;
+          if(item.image){
+            thumb = document.createElement('img');
+            thumb.className = 'item-thumb';
+            thumb.src = item.image;
+            thumb.alt = item.name;
+          }else{
+            thumb = document.createElement('div');
+            thumb.className = 'item-thumb placeholder';
+            thumb.textContent = '🎒';
+          }
+
+          const info = document.createElement('div');
+          info.className = 'item-info';
+          const metaParts = [];
+          if(item.qty && item.qty > 1) metaParts.push(`x${item.qty}`);
+          if(item.note) metaParts.push(item.note);
+          info.innerHTML = `<div class="item-name"></div><div class="item-meta"></div>`;
+          info.querySelector('.item-name').textContent = item.name;
+          info.querySelector('.item-meta').textContent = metaParts.join(' · ');
+
+          const actions = document.createElement('div');
+          actions.className = 'item-actions';
+          const editBtn = document.createElement('button');
+          editBtn.textContent = '✎';
+          editBtn.addEventListener('click', () => openSheet(item));
+          const delBtn = document.createElement('button');
+          delBtn.className = 'del';
+          delBtn.textContent = '✕';
+          delBtn.addEventListener('click', () => {
+            if(confirm(`Eliminare "${item.name}"?`)){
+              items = items.filter(i => i.id !== item.id);
+              saveItems();
+              render();
+            }
+          });
+          actions.appendChild(editBtn);
+          actions.appendChild(delBtn);
+
+          row.appendChild(check);
+          row.appendChild(thumb);
+          row.appendChild(info);
+          row.appendChild(actions);
+          content.appendChild(row);
+        });
+      });
+    }
+
+    document.getElementById('search').addEventListener('input', e => { searchTerm = e.target.value; render(); });
+    document.getElementById('hidePacked').addEventListener('change', e => { hidePacked = e.target.checked; render(); });
+
+    // ===== Add / edit sheet =====
+    const overlay = document.getElementById('overlay');
+    const fName = document.getElementById('fName');
+    const fCategory = document.getElementById('fCategory');
+    const fQty = document.getElementById('fQty');
+    const fNote = document.getElementById('fNote');
+    const fImgFile = document.getElementById('fImgFile');
+    const fImgPreview = document.getElementById('fImgPreview');
+    let pendingImage = '';
+
+    function openSheet(item){
+      editingId = item ? item.id : null;
+      document.getElementById('sheetTitle').textContent = item ? 'Modifica oggetto' : 'Nuovo oggetto';
+      fName.value = item ? item.name : '';
+      fCategory.value = item ? (item.category || '') : '';
+      fQty.value = item ? (item.qty || 1) : 1;
+      fNote.value = item ? (item.note || '') : '';
+      pendingImage = item ? (item.image || '') : '';
+      fImgPreview.src = pendingImage || '';
+      fImgPreview.style.visibility = pendingImage ? 'visible' : 'hidden';
+      fImgFile.value = '';
+      overlay.classList.add('open');
+      fName.focus();
+    }
+    function closeSheet(){ overlay.classList.remove('open'); }
+
+    document.getElementById('btnAdd').addEventListener('click', () => openSheet(null));
+    document.getElementById('btnCancelItem').addEventListener('click', closeSheet);
+    overlay.addEventListener('click', e => { if(e.target === overlay) closeSheet(); });
+
+    fImgFile.addEventListener('change', async () => {
+      const file = fImgFile.files[0];
+      if(!file) return;
+      pendingImage = await resizeImage(file);
+      fImgPreview.src = pendingImage;
+      fImgPreview.style.visibility = 'visible';
+    });
+
+    document.getElementById('btnSaveItem').addEventListener('click', () => {
+      const name = fName.value.trim();
+      if(!name){ fName.focus(); return; }
+      const data = {
+        name,
+        category: fCategory.value.trim() || 'Altro',
+        qty: Math.max(1, parseInt(fQty.value, 10) || 1),
+        note: fNote.value.trim(),
+        image: pendingImage
+      };
+      if(editingId){
+        const item = items.find(i => i.id === editingId);
+        Object.assign(item, data);
+      }else{
+        items.push({ id: crypto.randomUUID(), packed:false, ...data });
+      }
+      saveItems();
+      closeSheet();
+      render();
+    });
+
+    // ===== Footer actions =====
+    document.getElementById('btnResetPacked').addEventListener('click', () => {
+      if(!items.length) return;
+      if(confirm('Togliere la spunta a tutti gli oggetti?')){
+        items.forEach(i => i.packed = false);
+        saveItems();
+        render();
+      }
+    });
+    document.getElementById('btnClearAll').addEventListener('click', () => {
+      if(!items.length) return;
+      if(confirm('Eliminare definitivamente tutta la lista?')){
+        items = [];
+        saveItems();
+        render();
+      }
+    });
+    document.getElementById('btnExport').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'montelago-attrezzatura.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+    document.getElementById('btnImport').addEventListener('click', () => document.getElementById('importFile').click());
+    document.getElementById('importFile').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try{
+          const parsed = JSON.parse(reader.result);
+          if(!Array.isArray(parsed)) throw new Error('formato non valido');
+          if(items.length && !confirm('Importare sovrascriverà la lista attuale. Continuare?')) return;
+          items = parsed;
+          saveItems();
+          render();
+        }catch(err){
+          alert('File non valido: ' + err.message);
+        }
+        e.target.value = '';
+      };
+      reader.readAsText(file);
+    });
+  </script>
+</body>
+</html>
